@@ -14,7 +14,7 @@ class KeyGen(object):
             bits += 1
         mav = (mv // modulus) * modulus
         while not ok:
-            rv = randbits(bits+1)
+            rv = randbits(bits + 1)
             if rv < mav:
                 rv %= modulus
                 ok = True
@@ -72,10 +72,47 @@ class KeyGen(object):
                     if ad == n - 1:
                         composite = False
                         break
-                    ad = (ad * ad) % n
+                    ad = pow(ad, 2, n)
             if composite:
                 return False
         return True
+
+    def prime_factorization(this, n):
+        ret = []
+        for p in this.small_primes:
+            if p * p > n:
+                ret.append((n, 1))
+                return ret
+            if not n % p:
+                c = 1
+                n = n // p
+                while not n % p:
+                    c += 1
+                    n = n // p
+                ret.append((p, c))
+        if n == 1:
+            return ret
+        else:
+            if this.miller_rabin_test(n, 20):
+                ret.append((n, 1))
+                return ret
+            else:
+                return None
+
+    def find_generator(this, p, f = None):
+        if f == None:
+            f = this.prime_factorization(p - 1)
+        g = this.safe_random(2, p - 1)
+        ok = False
+        while not ok:
+            ok = True
+            for d in f:
+                k = (p - 1) // d[0]
+                if pow(g, k, p) == 1:
+                    ok = False
+                    g = this.safe_random(2, p - 1)
+                    break
+        return g
 
     def prime_up_to(this, n):
         this.ensure_small_primes()
@@ -111,16 +148,22 @@ class KeyGen(object):
         listF = ['f'] * (bits // 4)
         return ''.join(listF)
 
-    def keyGen(this, bits):
-        max = int(this.hexString(bits), 16)
-        min = max - int(this.hexString(bits - 4), 16)
-
+    def keyPrimeGen(this, a, b):
         while True:
-            priv_p = this.random_prime(min, max)
-            priv_q = this.random_prime(min, max)        
-            if priv_p % 4 != 3 or priv_q % 4 != 3: 
-                continue
-            if priv_p != priv_q: return (priv_p, priv_q)
+             p = this.random_prime(a, b)
+             f = this.prime_factorization(p - 1)
+             if f != None:
+                 return (p, f)
+
+    def keyGen(this, bits):
+        max = 1 << bits
+        min = (max << 1) - 1
+        p, f = this.keyPrimeGen(max, min)
+        al = this.find_generator(p, f)
+        k = this.safe_random(2, p - 1)
+        bt = pow(al, k, p)
+        return (p, al, bt, k)
+
 
 
 
