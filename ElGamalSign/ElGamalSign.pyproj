@@ -12,6 +12,9 @@
     <OutputPath>.</OutputPath>
     <Name>ElGamalSign</Name>
     <RootNamespace>ElGamalSign</RootNamespace>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments>-v -f test.txt</CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,6 +32,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="files\" />
+    <Folder Include="keys\" />
+    <Folder Include="sign\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="files\test.txt" />
